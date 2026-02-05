@@ -66,7 +66,7 @@ public final class TeleOp {
             ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().right_bumper && !ctx.gamepad1().left_bumper),
                     exec(() -> Intake.INSTANCE.setMode(Intake.Mode.RIGHT))
             );
-            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().a),
+            ctx.bindSpawn(ctx.risingEdge(() -> !ctx.gamepad1().left_bumper && !ctx.gamepad1().right_bumper),
                     exec(() -> Intake.INSTANCE.setMode(Intake.Mode.IDLE))
             );
 

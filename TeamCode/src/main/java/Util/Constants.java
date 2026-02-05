@@ -55,10 +55,10 @@ public final class Constants {
 
         public static final double TICKS_PER_REV = 28.0;
 
-        public static final double FAR_TARGET_RPS = 52.5;
-        public static final double CLOSE_TARGET_RPS = 46.5;
+        public static final double FAR_TARGET_RPS = 53.5;
+        public static final double CLOSE_TARGET_RPS = 48.5;
 
-        public static final double F = 17.75;
+        public static final double F = 20.00;
         public static final double P = 2.5 * F;
         public static final double I = 0.0;
         public static final double D = 0.0;
@@ -74,7 +74,7 @@ public final class Constants {
         public static final double HOLD_RIGHT = 0.5;
         public static final double RELEASE_RIGHT = 1.0;
 
-        public static final long GATE_OPEN_MS = 100;
+        public static final long GATE_OPEN_MS = 250;
         public static final long SHOT_TOTAL_MS = 1500;
     }
 
