@@ -22,11 +22,15 @@ public class Release {
     private enum Shot {
         NONE,
         LEFT,
-        RIGHT
+        RIGHT,
+        AUTOLEFT,
+        AUTORIGHT
     }
 
     private Shot activeShot = Shot.NONE;
     private long shotStartMs = 0;
+    private int autoPhase = 0;
+    private static final long AUTO_FEED_MS = 500;
 
     public void init(HardwareMap hw, Telemetry telem) {
         this.telemetry = telem;
@@ -52,15 +56,78 @@ public class Release {
         shotStartMs = System.currentTimeMillis();
     }
 
+    public void autoLeftShot() {
+        if (left == null || right == null) return;
+        activeShot = Shot.AUTOLEFT;
+        autoPhase = 0;
+        shotStartMs = System.currentTimeMillis();
+    }
+
+    public void autoRightShot() {
+        if (left == null || right == null) return;
+        activeShot = Shot.AUTORIGHT;
+        autoPhase = 0;
+        shotStartMs = System.currentTimeMillis();
+    }
+
     public void cancel() {
         activeShot = Shot.NONE;
         holdBoth();
+        Intake.INSTANCE.setMode(Intake.Mode.IDLE);
     }
 
     public void update() {
         if (activeShot == Shot.NONE) return;
 
         long elapsed = System.currentTimeMillis() - shotStartMs;
+
+        if (activeShot == Shot.AUTOLEFT || activeShot == Shot.AUTORIGHT) {
+            if (autoPhase == 0 && elapsed > Constants.Releases.GATE_OPEN_MS) {
+                autoPhase = 1;
+                shotStartMs = System.currentTimeMillis();
+                elapsed = 0;
+            } else if (autoPhase == 1 && elapsed > Constants.Releases.GATE_OPEN_MS + 250) {
+                autoPhase = 2;
+                Intake.INSTANCE.setMode(activeShot == Shot.AUTOLEFT ? Intake.Mode.LEFT : Intake.Mode.RIGHT);
+                shotStartMs = System.currentTimeMillis();
+                elapsed = 0;
+            } else if (autoPhase == 2 && elapsed > AUTO_FEED_MS) {
+                autoPhase = 3;
+                Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                shotStartMs = System.currentTimeMillis();
+                elapsed = 0;
+            }
+
+            boolean gateOpenWindow = elapsed <= Constants.Releases.GATE_OPEN_MS;
+
+            switch (autoPhase) {
+                case 0: // LEFT
+                    left.setPosition(gateOpenWindow ? Constants.Releases.RELEASE_LEFT : Constants.Releases.HOLD_LEFT);
+                    right.setPosition(Constants.Releases.HOLD_RIGHT);
+                    break;
+
+                case 1: // RIGHT
+                    right.setPosition(gateOpenWindow ? Constants.Releases.RELEASE_RIGHT : Constants.Releases.HOLD_RIGHT);
+                    left.setPosition(Constants.Releases.HOLD_LEFT);
+                    break;
+
+                case 2: // FEED
+                    holdBoth();
+                    break;
+
+                case 3: // BOTH
+                    left.setPosition(gateOpenWindow ? Constants.Releases.RELEASE_LEFT : Constants.Releases.HOLD_LEFT);
+                    right.setPosition(gateOpenWindow ? Constants.Releases.RELEASE_RIGHT : Constants.Releases.HOLD_RIGHT);
+                    break;
+            }
+
+            if (autoPhase == 3 && elapsed >= Constants.Releases.SHOT_TOTAL_MS) {
+                holdBoth();
+                Intake.INSTANCE.setMode(Intake.Mode.IDLE);
+                activeShot = Shot.NONE;
+            }
+            return;
+        }
 
         boolean gateOpenWindow = elapsed <= Constants.Releases.GATE_OPEN_MS;
 

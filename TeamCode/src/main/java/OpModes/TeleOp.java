@@ -80,10 +80,18 @@ public final class TeleOp {
 
             // Shooter Gates
             ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().x),
-                    exec(() -> Release.INSTANCE.startLeftShot())
+                    exec(() -> Release.INSTANCE.autoLeftShot())
             );
             ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().b),
-                    exec(() -> Release.INSTANCE.startRightShot())
+                    exec(() -> Release.INSTANCE.autoRightShot())
+            );
+
+            // Elevator
+            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().options && ctx.gamepad1().share),
+                    exec(() -> Elevator.INSTANCE.applyPreset())
+            );
+            ctx.bindSpawn(ctx.risingEdge(() -> ctx.gamepad1().dpad_up),
+                    exec(() -> Elevator.INSTANCE.startRise())
             );
 
             // Shut Off

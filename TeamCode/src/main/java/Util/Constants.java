@@ -58,8 +58,8 @@ public final class Constants {
         public static final double FAR_TARGET_RPS = 53.5;
         public static final double CLOSE_TARGET_RPS = 48.5;
 
-        public static final double F = 20.00;
-        public static final double P = 2.5 * F;
+        public static final double F = 18.00;
+        public static final double P = 2.25 * F;
         public static final double I = 0.0;
         public static final double D = 0.0;
     }
